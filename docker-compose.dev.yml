@@ -1,0 +1,75 @@
+version: '3.7'
+
+services:
+  db:
+    image: postgres:13.4-alpine3.14
+    container_name: ms-email-db
+    networks:
+      - back-tier
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=ms-email
+      - POSTGRES_PASSWORD=banco123
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  rmq:
+    image: rabbitmq:3-management
+    container_name: ms-email-rmq
+    command: rabbitmq-server
+    networks:
+      - back-tier
+    ports:
+      - 5672:5672
+      - 15672:15672
+    environment:
+     - RABBITMQ_DEFAULT_USER=mqadmin
+     - RABBITMQ_DEFAULT_PASS=mq123
+    volumes:
+      - rmq-rabbitmq:/var/lib/rabbitmq
+
+  api:
+    image: ms-email-api:1.0
+    container_name: ms-email-api
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    networks:
+      - back-tier
+    ports:
+      - 8080:8080
+    depends_on:
+      - db
+      - rmq
+    volumes:
+      - ./.m2:/root/.m2
+      - ./:/usr/src
+    
+  dbadm:
+    image: dpage/pgadmin4:latest
+    container_name: ms-email-dbadm
+    networks:
+      - front-tier
+      - back-tier
+    ports:
+      - 8079:80
+    depends_on:
+      - db
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=dev@dev.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    volumes:
+      - dbadm-pgadmin:/var/lib/pgadmin
+      - dbadm-servers:/pgadmin4/servers.json
+
+volumes:
+  db-data:
+  rmq-rabbitmq:
+  dbadm-pgadmin:
+  dbadm-servers:
+
+networks:
+  front-tier:
+  back-tier:
