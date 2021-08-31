@@ -1,0 +1,18 @@
+POST http://localhost:8080/sending-email HTTP/1.1
+content-type: application/json
+
+{
+    "ownerRef": "test",
+    "emailFrom": "test@test.com",
+    "emailTo": "test@test.com",
+    "subject": "Test",
+    "text": "Test"
+}
+
+###
+
+GET http://localhost:8080/emails HTTP/1.1
+
+###
+
+GET http://localhost:8080/emails/2f7d22c0-5779-42db-a58b-c1ce1e53ad88 HTTP/1.1
